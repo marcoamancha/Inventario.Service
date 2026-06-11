@@ -1,22 +1,38 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Inventario.Service.Dominio.Modelos.Producto
 {
     /// <summary>
-    /// Clase para el modelo de productos
+    /// Modelo de dominio para productos
     /// </summary>
     public class ProductoModelo
     {
-        [Key]
-        public Guid ProductoId { get; set; }
-        public string? Nombre { get; set; }
-        public string? Descripcion { get; set; }
-        public string? Categoria { get; set; }
-        public string? Imagen { get; set; }
-        public decimal Precio { get; set; }
-        public int StockCantidad { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public Guid ProductoId { get; private set; }
+        public string? Nombre { get; private set; }
+        public string? Descripcion { get; private set; }
+        public string? Categoria { get; private set; }
+        public string? Imagen { get; private set; }
+        public decimal Precio { get; private set; }
+        public int StockCantidad { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
+
+        public ProductoModelo(Guid productoId, string? nombre, string? descripcion, string? categoria, string? imagen, decimal precio, int stockCantidad, DateTime createdAt, DateTime updatedAt)
+        {
+            ProductoId = productoId;
+            Nombre = nombre;
+            Descripcion = descripcion;
+            Categoria = categoria;
+            Imagen = imagen;
+            Precio = precio;
+            StockCantidad = stockCantidad;
+            CreatedAt = createdAt;
+            UpdatedAt = updatedAt;
+        }
+
+        public void ActualizarStock(int nuevoStock)
+        {
+            StockCantidad = nuevoStock;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

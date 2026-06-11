@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
-using Inventario.Service.Dominio.Modelos.Producto;
+using Inventario.Service.Dominio.General;
 
 namespace Inventario.Service.Dominio.General
 {
     /// <summary>
     /// Clase con validaciones generales para producto
     /// </summary>
-    public class ProductoValidator : AbstractValidator<ProductoModelo>
+    public class ProductoValidator : AbstractValidator<ProductoDto>
     {
         public ProductoValidator()
         {

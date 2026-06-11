@@ -1,6 +1,7 @@
 ﻿using Inventario.Service.Dominio.Interfaces.Productos;
 using Inventario.Service.Dominio.Modelos.Transaccion;
 using Inventario.Service.Infraestructura.Contextos;
+using Inventario.Service.Infraestructura.Entidades;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventario.Service.Infraestructura.Servicio
@@ -10,7 +11,7 @@ namespace Inventario.Service.Infraestructura.Servicio
         /// <summary>
         /// Objeto de inventario
         /// </summary>
-        private InventarioContexto inventarioContexto;
+        private readonly InventarioContexto inventarioContexto;
 
         /// <summary>
         /// Constructor de la clase
@@ -22,25 +23,12 @@ namespace Inventario.Service.Infraestructura.Servicio
         }
 
         /// <summary>
-        /// Metodo para registrar la transaccion
+        /// Registra la transaccion en la base de datos
         /// </summary>
-        /// <param name="transaccion">Datos de la transaccion</param>
         public async Task<bool> RegistrarTransaccionAsync(TransaccionModelo transaccion)
         {
-            var producto = await inventarioContexto.Productos.FindAsync(transaccion.ProductoId);
-            if (producto == null)
-                throw new Exception("El producto no existe.");
-
-            if (transaccion.TipoTransaccion == "venta" && producto.StockCantidad < transaccion.Cantidad)
-                throw new Exception("Stock insuficiente para la venta.");
-
-            inventarioContexto.Add(transaccion);
-
-            if (transaccion.TipoTransaccion == "compra")
-                producto.StockCantidad += transaccion.Cantidad;
-            else
-                producto.StockCantidad -= transaccion.Cantidad;
-
+            var entidad = MapearAEntidad(transaccion);
+            inventarioContexto.Transacciones.Add(entidad);
             await inventarioContexto.SaveChangesAsync();
             return true;
         }
@@ -50,7 +38,24 @@ namespace Inventario.Service.Infraestructura.Servicio
         /// </summary>
         public async Task<List<TransaccionModelo>> ObtenerTodosAsync()
         {
-            return await inventarioContexto.Transacciones.ToListAsync();
+            var entidades = await inventarioContexto.Transacciones.ToListAsync();
+            return entidades.Select(MapearAModelo).ToList();
         }
+
+        private static TransaccionModelo MapearAModelo(TransaccionEntidad e) =>
+            new(e.TipoTransaccion, e.ProductoId, e.Cantidad, e.PrecioUnitario, e.Detalle);
+
+        private static TransaccionEntidad MapearAEntidad(TransaccionModelo m) =>
+            new()
+            {
+                TransaccionId = m.TransaccionId,
+                Fecha = m.Fecha,
+                TipoTransaccion = m.TipoTransaccion,
+                ProductoId = m.ProductoId,
+                Cantidad = m.Cantidad,
+                PrecioUnitario = m.PrecioUnitario,
+                PrecioTotal = m.PrecioTotal,
+                Detalle = m.Detalle
+            };
     }
 }

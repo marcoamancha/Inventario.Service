@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
-    { Title = "Api Caduca REST", Version = "v1" });
+    { Title = "Api Inventtario REST", Version = "v1" });
 });
 
 builder.Services.AddDbContext<InventarioContexto>(options =>

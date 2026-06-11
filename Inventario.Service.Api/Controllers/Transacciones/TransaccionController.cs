@@ -1,5 +1,5 @@
-﻿using Inventario.Service.Aplicacion.Transacion;
-using Inventario.Service.Dominio.General;
+﻿using Inventario.Service.Dominio.General;
+using Inventario.Service.Dominio.Interfaces.Productos;
 using Inventario.Service.Dominio.Modelos.Transaccion;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,15 +10,15 @@ namespace Inventario.Service.Api.Controllers.Transacciones
     public class TransaccionController : ControllerBase
     {
         /// <summary>
-        /// Objeto del usecase de transaccion
+        /// Puerto de entrada del caso de uso de transacciones
         /// </summary>
-        private readonly RegistrarTransaccionUseCases registrarTransaccionUseCases;
+        private readonly IRegistrarTransaccionUseCases registrarTransaccionUseCases;
 
         /// <summary>
         /// Constructor de la clase
         /// </summary>
-        /// <param name="registrarTransaccionUseCases">Inyeccion del use case de transaccion</param>
-        public TransaccionController(RegistrarTransaccionUseCases registrarTransaccionUseCases)
+        /// <param name="registrarTransaccionUseCases">Inyeccion del caso de uso de transaccion</param>
+        public TransaccionController(IRegistrarTransaccionUseCases registrarTransaccionUseCases)
         {
             this.registrarTransaccionUseCases = registrarTransaccionUseCases;
         }

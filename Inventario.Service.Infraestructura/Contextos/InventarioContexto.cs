@@ -1,5 +1,4 @@
-﻿using Inventario.Service.Dominio.Modelos.Producto;
-using Inventario.Service.Dominio.Modelos.Transaccion;
+﻿using Inventario.Service.Infraestructura.Entidades;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventario.Service.Infraestructura.Contextos
@@ -8,22 +7,21 @@ namespace Inventario.Service.Infraestructura.Contextos
     {
         public InventarioContexto(DbContextOptions<InventarioContexto> options): base(options) { }
 
-        public DbSet<ProductoModelo> Productos { get; set; }
+        public DbSet<ProductoEntidad> Productos { get; set; }
 
-        public DbSet<TransaccionModelo> Transacciones { get; set; }
+        public DbSet<TransaccionEntidad> Transacciones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<ProductoModelo>().ToTable("Productos");
-            modelBuilder.Entity<ProductoModelo>()
+            modelBuilder.Entity<ProductoEntidad>().ToTable("Productos");
+            modelBuilder.Entity<ProductoEntidad>()
                 .HasKey(p => p.ProductoId);
 
-            modelBuilder.Entity<TransaccionModelo>().ToTable("Transacciones");
-            modelBuilder.Entity<TransaccionModelo>()
+            modelBuilder.Entity<TransaccionEntidad>().ToTable("Transacciones");
+            modelBuilder.Entity<TransaccionEntidad>()
                 .HasKey(p => p.TransaccionId);
-
         }
     }
 }

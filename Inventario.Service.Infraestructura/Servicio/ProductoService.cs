@@ -1,6 +1,7 @@
 ﻿using Inventario.Service.Dominio.Interfaces.Productos;
 using Inventario.Service.Dominio.Modelos.Producto;
 using Inventario.Service.Infraestructura.Contextos;
+using Inventario.Service.Infraestructura.Entidades;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventario.Service.Infraestructura.Servicio
@@ -10,7 +11,7 @@ namespace Inventario.Service.Infraestructura.Servicio
         /// <summary>
         /// Objeto de inventario
         /// </summary>
-        private InventarioContexto inventarioContexto;
+        private readonly InventarioContexto inventarioContexto;
 
         /// <summary>
         /// Constructor de la clase
@@ -24,29 +25,34 @@ namespace Inventario.Service.Infraestructura.Servicio
         /// <summary>
         /// Obtiene todos los productos
         /// </summary>
-        /// <returns>Lista de productos</returns>
         public async Task<List<ProductoModelo>> ObtenerTodosAsync()
         {
-            return await inventarioContexto.Productos.ToListAsync();
+            var entidades = await inventarioContexto.Productos.ToListAsync();
+            return entidades.Select(MapearAModelo).ToList();
         }
 
         /// <summary>
-        /// Agregar un nuevo producto
+        /// Obtiene un producto por su id
         /// </summary>
-        /// <param name="producto">Datos del producto</param>
-        /// <returns>Identificacion producto agregado</returns>
+        public async Task<ProductoModelo?> ObtenerPorIdAsync(Guid id)
+        {
+            var entidad = await inventarioContexto.Productos.FirstOrDefaultAsync(p => p.ProductoId == id);
+            return entidad is null ? null : MapearAModelo(entidad);
+        }
+
+        /// <summary>
+        /// Agrega un nuevo producto
+        /// </summary>
         public async Task AgregarAsync(ProductoModelo producto)
         {
-            producto.ProductoId = Guid.NewGuid();
-            await inventarioContexto.Productos.AddAsync(producto);
+            var entidad = MapearAEntidad(producto);
+            await inventarioContexto.Productos.AddAsync(entidad);
             await inventarioContexto.SaveChangesAsync();
         }
 
         /// <summary>
-        /// Actualizar un producto
+        /// Actualiza un producto existente
         /// </summary>
-        /// <param name="producto">Datos del producto</param>
-        /// <returns>Identificacion producto actualizado</returns>
         public async Task ActualizarAsync(ProductoModelo producto)
         {
             var existente = await inventarioContexto.Productos.AsNoTracking().FirstOrDefaultAsync(p => p.ProductoId == producto.ProductoId);
@@ -54,48 +60,53 @@ namespace Inventario.Service.Infraestructura.Servicio
             if (existente == null)
                 throw new KeyNotFoundException("El producto no existe");
 
-            inventarioContexto.Productos.Update(producto);
+            var entidad = MapearAEntidad(producto);
+            inventarioContexto.Productos.Update(entidad);
             await inventarioContexto.SaveChangesAsync();
         }
 
         /// <summary>
-        /// Obtiene un producto por su id
+        /// Elimina un producto por su id
         /// </summary>
-        /// <param name="id">Identificacion del producto</param>
-        /// <returns>Producto</returns>
-        public async Task<ProductoModelo?> ObtenerPorIdAsync(Guid id)
-        {
-            return await inventarioContexto.Productos.FirstOrDefaultAsync(p => p.ProductoId == id);    
-        }
-
-        /// <summary>
-        /// Eliminar un prooducto
-        /// </summary>
-        /// <param name="id">Identificacion del producto</param>
-        /// <returns>Identificacion prooducto eliminado</returns>
         public async Task EliminarAsync(Guid id)
         {
-            var product = await ObtenerPorIdAsync(id);
-            if (product != null)
+            var entidad = await inventarioContexto.Productos.FindAsync(id);
+            if (entidad != null)
             {
-                inventarioContexto.Productos.Remove(product);
+                inventarioContexto.Productos.Remove(entidad);
                 await inventarioContexto.SaveChangesAsync();
             }
         }
 
         /// <summary>
-        /// Actualiza stock de productos
+        /// Actualiza el stock de un producto
         /// </summary>
-        /// <param name="productoId">Identificacion del producto</param>
-        /// <param name="nuevaCantidad">Nueva cantidad</param>
         public async Task ActualizarStockAsync(Guid productoId, int nuevaCantidad)
         {
-            var producto = await inventarioContexto.Productos.FindAsync(productoId);
-            if (producto != null)
+            var entidad = await inventarioContexto.Productos.FindAsync(productoId);
+            if (entidad != null)
             {
-                producto.StockCantidad = nuevaCantidad;
+                entidad.StockCantidad = nuevaCantidad;
+                entidad.UpdatedAt = DateTime.UtcNow;
                 await inventarioContexto.SaveChangesAsync();
             }
         }
+
+        private static ProductoModelo MapearAModelo(ProductoEntidad e) =>
+            new(e.ProductoId, e.Nombre, e.Descripcion, e.Categoria, e.Imagen, e.Precio, e.StockCantidad, e.CreatedAt, e.UpdatedAt);
+
+        private static ProductoEntidad MapearAEntidad(ProductoModelo m) =>
+            new()
+            {
+                ProductoId = m.ProductoId,
+                Nombre = m.Nombre,
+                Descripcion = m.Descripcion,
+                Categoria = m.Categoria,
+                Imagen = m.Imagen,
+                Precio = m.Precio,
+                StockCantidad = m.StockCantidad,
+                CreatedAt = m.CreatedAt,
+                UpdatedAt = m.UpdatedAt
+            };
     }
 }

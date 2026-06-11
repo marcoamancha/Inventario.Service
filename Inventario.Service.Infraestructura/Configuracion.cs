@@ -1,5 +1,5 @@
 ﻿using Inventario.Service.Aplicacion.Productos;
-using Inventario.Service.Aplicacion.Transacion;
+using Inventario.Service.Aplicacion.Transaccion;
 using Inventario.Service.Dominio.Interfaces.Productos;
 using Inventario.Service.Infraestructura.Servicio;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +12,8 @@ namespace Inventario.Service.Infraestructura
         {
             services.AddScoped<IProductoRepository, ProductoService>();
             services.AddScoped<ITransaccionRepository, TransaccionService>();
-            services.AddScoped<ProductoUseCases>();
-            services.AddScoped<RegistrarTransaccionUseCases>();
+            services.AddScoped<IProductoUseCases, ProductoUseCases>();
+            services.AddScoped<IRegistrarTransaccionUseCases, RegistrarTransaccionUseCases>();
             return services;
         }
     }

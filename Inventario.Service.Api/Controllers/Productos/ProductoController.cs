@@ -1,5 +1,5 @@
-﻿using Inventario.Service.Aplicacion.Productos;
-using Inventario.Service.Dominio.General;
+﻿using Inventario.Service.Dominio.General;
+using Inventario.Service.Dominio.Interfaces.Productos;
 using Inventario.Service.Dominio.Modelos.Producto;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,15 +10,15 @@ namespace Inventario.Service.Api.Controllers.Productos
     public class ProductoController : ControllerBase
     {
         /// <summary>
-        /// Objeto del usecase de productop
+        /// Puerto de entrada del caso de uso de productos
         /// </summary>
-        private readonly ProductoUseCases productoUseCases;
+        private readonly IProductoUseCases productoUseCases;
 
         /// <summary>
         /// Constructor de la clase
         /// </summary>
-        /// <param name="productoUseCases">Inyeccion de usecase de producto</param>
-        public ProductoController(ProductoUseCases productoUseCases)
+        /// <param name="productoUseCases">Inyeccion del caso de uso de producto</param>
+        public ProductoController(IProductoUseCases productoUseCases)
         {
             this.productoUseCases = productoUseCases;
         }
@@ -26,7 +26,6 @@ namespace Inventario.Service.Api.Controllers.Productos
         /// <summary>
         /// Api para obtener todos los productos
         /// </summary>
-        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> ObtenerProductos()
         {
@@ -42,7 +41,7 @@ namespace Inventario.Service.Api.Controllers.Productos
         }
 
         /// <summary>
-        /// Api para Obtener un producto por id
+        /// Api para obtener un producto por id
         /// </summary>
         /// <param name="id">Identificacion del producto</param>
         [HttpGet("{id}")]
@@ -64,13 +63,13 @@ namespace Inventario.Service.Api.Controllers.Productos
         /// <summary>
         /// Api para registrar un producto
         /// </summary>
-        /// <param name="producto">Datos del producto</param>
+        /// <param name="dto">Datos del producto</param>
         [HttpPost]
-        public async Task<IActionResult> AgregarProducto([FromBody] ProductoModelo producto)
+        public async Task<IActionResult> AgregarProducto([FromBody] ProductoDto dto)
         {
             try
             {
-                await productoUseCases.AgregarProductoAsync(producto);
+                var producto = await productoUseCases.AgregarProductoAsync(dto);
                 return CreatedAtAction(nameof(ObtenerProductoPorId), new { id = producto.ProductoId }, new InventarioRespuesta<ProductoModelo>(producto));
             }
             catch (Exception ex)
@@ -83,21 +82,19 @@ namespace Inventario.Service.Api.Controllers.Productos
         /// Api para actualizar un producto
         /// </summary>
         /// <param name="id">Identificacion del producto</param>
-        /// <param name="producto">Datos del producto</param>
+        /// <param name="dto">Datos del producto</param>
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarProducto(Guid id, [FromBody] ProductoModelo producto)
+        public async Task<IActionResult> ActualizarProducto(Guid id, [FromBody] ProductoDto dto)
         {
-            if (id != producto.ProductoId)
-                return BadRequest();
             try
             {
-                await productoUseCases.ActualizarProductoAsync(producto);
+                var producto = await productoUseCases.ActualizarProductoAsync(id, dto);
                 return Ok(new InventarioRespuesta<ProductoModelo>(producto));
             }
             catch (Exception ex)
             {
                 return BadRequest(new InventarioRespuesta<Exception>(ex, false, ex.Message));
-            }          
+            }
         }
 
         /// <summary>
@@ -115,7 +112,7 @@ namespace Inventario.Service.Api.Controllers.Productos
             catch (Exception ex)
             {
                 return BadRequest(new InventarioRespuesta<Exception>(ex, false, ex.Message));
-            }          
+            }
         }
     }
 }

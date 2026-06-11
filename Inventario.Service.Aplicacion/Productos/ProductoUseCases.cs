@@ -1,4 +1,5 @@
-﻿using Inventario.Service.Dominio.Interfaces.Productos;
+﻿using Inventario.Service.Dominio.General;
+using Inventario.Service.Dominio.Interfaces.Productos;
 using Inventario.Service.Dominio.Modelos.Producto;
 
 namespace Inventario.Service.Aplicacion.Productos
@@ -6,10 +7,10 @@ namespace Inventario.Service.Aplicacion.Productos
     /// <summary>
     /// Clase con la logica de negocio para productos
     /// </summary>
-    public class ProductoUseCases
+    public class ProductoUseCases : IProductoUseCases
     {
         /// <summary>
-        /// Instancia para interfaz del servicio de productos
+        /// Instancia para interfaz del repositorio de productos
         /// </summary>
         private readonly IProductoRepository productoRepository;
 
@@ -24,7 +25,6 @@ namespace Inventario.Service.Aplicacion.Productos
         /// <summary>
         /// Obtiene todos los productos
         /// </summary>
-        /// <returns>Lista de productos</returns>
         public async Task<IEnumerable<ProductoModelo>> ObtenerProductosAsync()
         {
             return await productoRepository.ObtenerTodosAsync();
@@ -33,38 +33,54 @@ namespace Inventario.Service.Aplicacion.Productos
         /// <summary>
         /// Obtiene un producto por su id
         /// </summary>
-        /// <param name="id">Identificacion del producto</param>
-        /// <returns>Producto</returns>
         public async Task<ProductoModelo?> ObtenerProductoPorIdAsync(Guid id)
         {
             return await productoRepository.ObtenerPorIdAsync(id);
         }
 
         /// <summary>
-        /// Agregar un nuevo producto
+        /// Agrega un nuevo producto a partir de un DTO
         /// </summary>
-        /// <param name="producto">Datos del producto</param>
-        /// <returns>Identificacion producto agregado</returns>
-        public async Task AgregarProductoAsync(ProductoModelo product)
+        public async Task<ProductoModelo> AgregarProductoAsync(ProductoDto dto)
         {
-            await productoRepository.AgregarAsync(product);
+            var producto = new ProductoModelo(
+                Guid.NewGuid(),
+                dto.Nombre,
+                dto.Descripcion,
+                dto.Categoria,
+                dto.Imagen,
+                dto.Precio,
+                dto.StockCantidad,
+                DateTime.UtcNow,
+                DateTime.UtcNow);
+
+            await productoRepository.AgregarAsync(producto);
+            return producto;
         }
 
         /// <summary>
-        /// Actualizar un producto
+        /// Actualiza un producto existente a partir de un DTO
         /// </summary>
-        /// <param name="producto">Datos del producto</param>
-        /// <returns>Identificacion producto actualizado</returns>
-        public async Task ActualizarProductoAsync(ProductoModelo product)
+        public async Task<ProductoModelo> ActualizarProductoAsync(Guid id, ProductoDto dto)
         {
-            await productoRepository.ActualizarAsync(product);
+            var producto = new ProductoModelo(
+                id,
+                dto.Nombre,
+                dto.Descripcion,
+                dto.Categoria,
+                dto.Imagen,
+                dto.Precio,
+                dto.StockCantidad,
+                DateTime.UtcNow,
+                DateTime.UtcNow);
+
+            await productoRepository.ActualizarAsync(producto);
+            return producto;
         }
 
         /// <summary>
-        /// Eliminar un prooducto
+        /// Elimina un producto por su id
         /// </summary>
-        /// <param name="id">Identificacion del producto</param>
-        /// <returns>Identificacion prooducto eliminado</returns>
         public async Task EliminarProductoAsync(Guid id)
         {
             await productoRepository.EliminarAsync(id);
